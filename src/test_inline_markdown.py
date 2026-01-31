@@ -1,6 +1,6 @@
 import unittest
 from textnode import TextNode, TextType
-from inline_markdown import split_nodes_delimiter, extract_markdown_images, extract_markdown_links
+from inline_markdown import split_nodes_delimiter, extract_markdown_images, extract_markdown_links, split_nodes_image, split_nodes_link
 
 class TestInlineMarkdown(unittest.TestCase):
     def test_split_simple_code(self):
@@ -97,6 +97,109 @@ class TestInlineMarkdown(unittest.TestCase):
         text = "Look at this image ![alt](url)"
         result = extract_markdown_links(text)
         self.assertEqual(result, [])  # must NOT include image
+    
+    def test_split_nodes_link_single_link(self):
+        nodes = [
+            TextNode("Hei [Google](https://google.com) verden", TextType.TEXT)
+        ]
+
+        new_nodes = split_nodes_link(nodes)
+
+        assert new_nodes == [
+            TextNode("Hei ", TextType.TEXT),
+            TextNode("Google", TextType.LINK, "https://google.com"),
+            TextNode(" verden", TextType.TEXT),
+        ]
+
+    def test_split_nodes_link_multiple_links(self):
+        nodes = [
+            TextNode(
+                "Besøk [Google](https://google.com) og [NRK](https://nrk.no)",
+                TextType.TEXT
+            )
+        ]
+
+        new_nodes = split_nodes_link(nodes)
+
+        assert new_nodes == [
+            TextNode("Besøk ", TextType.TEXT),
+            TextNode("Google", TextType.LINK, "https://google.com"),
+            TextNode(" og ", TextType.TEXT),
+            TextNode("NRK", TextType.LINK, "https://nrk.no"),
+        ]
+
+    def test_split_nodes_link_no_links(self):
+        nodes = [
+            TextNode("Dette er bare tekst", TextType.TEXT)
+        ]
+
+        new_nodes = split_nodes_link(nodes)
+
+        assert new_nodes == nodes
+    
+    def test_split_nodes_link_ignores_non_text_nodes(self):
+        nodes = [
+            TextNode("Google", TextType.LINK, "https://google.com")
+        ]
+
+        new_nodes = split_nodes_link(nodes)
+
+        assert new_nodes == nodes
+    
+    def test_split_nodes_image_single_image(self):
+        nodes = [
+            TextNode("Se ![alt](img.png) her", TextType.TEXT)
+        ]
+
+        new_nodes = split_nodes_image(nodes)
+
+        assert new_nodes == [
+            TextNode("Se ", TextType.TEXT),
+            TextNode("alt", TextType.IMAGE, "img.png"),
+            TextNode(" her", TextType.TEXT),
+        ]
+    
+    def test_split_nodes_image_multiple_images(self):
+        node = TextNode(
+            "This is text with an ![image](https://i.imgur.com/zjjcJKZ.png) and another ![second image](https://i.imgur.com/3elNhQu.png)",
+            TextType.TEXT,
+        )
+        new_nodes = split_nodes_image([node])
+        self.assertListEqual(
+            [
+                TextNode("This is text with an ", TextType.TEXT),
+                TextNode("image", TextType.IMAGE, "https://i.imgur.com/zjjcJKZ.png"),
+                TextNode(" and another ", TextType.TEXT),
+                TextNode(
+                    "second image", TextType.IMAGE, "https://i.imgur.com/3elNhQu.png"
+                ),
+            ],
+            new_nodes,
+        )
+    
+    def test_split_nodes_image_no_images(self):
+        nodes = [
+            TextNode("Bare tekst her", TextType.TEXT)
+        ]
+
+        new_nodes = split_nodes_image(nodes)
+
+        assert new_nodes == nodes
+    
+    def test_split_nodes_image_ignores_non_text_nodes(self):
+        nodes = [
+            TextNode("alt", TextType.IMAGE, "img.png")
+        ]
+
+        new_nodes = split_nodes_image(nodes)
+
+        assert new_nodes == nodes
+
+
+
+
+
+
 
 
 if __name__ == "__main__":
