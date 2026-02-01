@@ -97,6 +97,7 @@ class TestTextNode(unittest.TestCase):
         tn = TextNode("text", FakeType())
         with self.assertRaises(Exception):
             text_node_to_html_node(tn)
-
+    
+ 
 if __name__ == "__main__":
     unittest.main()

@@ -1,6 +1,11 @@
 import unittest
 from textnode import TextNode, TextType
-from inline_markdown import split_nodes_delimiter, extract_markdown_images, extract_markdown_links, split_nodes_image, split_nodes_link
+from inline_markdown import (split_nodes_delimiter, 
+                             extract_markdown_images, 
+                             extract_markdown_links, 
+                             split_nodes_image, 
+                             split_nodes_link,
+                             text_to_textnodes)
 
 class TestInlineMarkdown(unittest.TestCase):
     def test_split_simple_code(self):
@@ -195,11 +200,104 @@ class TestInlineMarkdown(unittest.TestCase):
 
         assert new_nodes == nodes
 
+    def test_plain_text(self):
+        text = "Just plain text"
+        nodes = text_to_textnodes(text)
+
+        assert nodes == [
+             TextNode("Just plain text", TextType.TEXT)
+        ]
 
 
+    def test_bold_text(self):
+        text = "This is **bold** text"
+        nodes = text_to_textnodes(text)
+
+        assert nodes == [
+            TextNode("This is ", TextType.TEXT),
+            TextNode("bold", TextType.BOLD),
+            TextNode(" text", TextType.TEXT),
+        ]
 
 
+    def test_italic_text(self):
+        text = "This is *italic* text"
+        nodes = text_to_textnodes(text)
 
+        assert nodes == [
+            TextNode("This is ", TextType.TEXT),
+            TextNode("italic", TextType.ITALIC),
+            TextNode(" text", TextType.TEXT),
+        ]
+
+
+    def test_code_text(self):
+        text = "This is `code`"
+        nodes = text_to_textnodes(text)
+
+        assert nodes == [
+            TextNode("This is ", TextType.TEXT),
+            TextNode("code", TextType.CODE),
+        ]
+
+
+    def test_image_only(self):
+        text = "![alt text](https://example.com/image.png)"
+        nodes = text_to_textnodes(text)
+
+        assert nodes == [
+            TextNode("alt text", TextType.IMAGE, "https://example.com/image.png")
+        ]
+
+
+    def test_link_only(self):
+        text = "[link text](https://example.com)"
+        nodes = text_to_textnodes(text)
+
+        assert nodes == [
+            TextNode("link text", TextType.LINK, "https://example.com")
+        ]
+
+
+    def test_mixed_markdown(self):
+        text = (
+            "This is **text** with an *italic* word and a `code block` "
+            "and an ![obi wan image](https://i.imgur.com/fJRm4Vk.jpeg) "
+            "and a [link](https://boot.dev)"
+        )
+
+        nodes = text_to_textnodes(text)
+
+        assert nodes == [
+            TextNode("This is ", TextType.TEXT),
+            TextNode("text", TextType.BOLD),
+            TextNode(" with an ", TextType.TEXT),
+            TextNode("italic", TextType.ITALIC),
+            TextNode(" word and a ", TextType.TEXT),
+            TextNode("code block", TextType.CODE),
+            TextNode(" and an ", TextType.TEXT),
+            TextNode("obi wan image", TextType.IMAGE, "https://i.imgur.com/fJRm4Vk.jpeg"),
+            TextNode(" and a ", TextType.TEXT),
+            TextNode("link", TextType.LINK, "https://boot.dev"),
+        ]
+
+
+    def test_multiple_links_and_images(self):
+        text = (
+            "Start [one](a.com) middle "
+            "![img](img.com) end [two](b.com)"
+        )
+
+        nodes = text_to_textnodes(text)
+
+        assert nodes == [
+            TextNode("Start ", TextType.TEXT),
+            TextNode("one", TextType.LINK, "a.com"),
+            TextNode(" middle ", TextType.TEXT),
+            TextNode("img", TextType.IMAGE, "img.com"),
+            TextNode(" end ", TextType.TEXT),
+            TextNode("two", TextType.LINK, "b.com"),
+        ]
 
 
 if __name__ == "__main__":
