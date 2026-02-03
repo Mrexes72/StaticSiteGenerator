@@ -221,7 +221,7 @@ class TestInlineMarkdown(unittest.TestCase):
 
 
     def test_italic_text(self):
-        text = "This is *italic* text"
+        text = "This is _italic_ text"
         nodes = text_to_textnodes(text)
 
         assert nodes == [
@@ -261,7 +261,7 @@ class TestInlineMarkdown(unittest.TestCase):
 
     def test_mixed_markdown(self):
         text = (
-            "This is **text** with an *italic* word and a `code block` "
+            "This is **text** with an _italic_ word and a `code block` "
             "and an ![obi wan image](https://i.imgur.com/fJRm4Vk.jpeg) "
             "and a [link](https://boot.dev)"
         )
