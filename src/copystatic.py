@@ -2,10 +2,10 @@ import os
 import shutil
 
 def clear_directory(dest):
-    if os.path.exists("./public"):
+    if os.path.exists(dest):
         print(f"Deleting directory {dest}")
-        shutil.rmtree("./public")
-    os.makedirs("./public")
+        shutil.rmtree(dest)
+    os.makedirs(dest)
 
 def copy_static_to_public(src, dest):
     for item in os.listdir(src):
